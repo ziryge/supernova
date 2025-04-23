@@ -6,7 +6,7 @@ import time
 from typing import Dict, Any, List, Optional
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
-from ..agents import SupervisorAgent, ResearcherAgent, CoderAgent, FileManagerAgent, BrowserAgent, OpenaBrowserAgent, SandboxAgent
+from ..agents import SupervisorAgent, ResearcherAgent, CoderAgent, FileManagerAgent, BrowserAgent, OpenaBrowserAgent, StreamlitBrowserAgent, SandboxAgent
 from ..config.env import DEBUG
 from .thinking_process import ThinkingProcess
 from ..utils import TerminalCapture
@@ -34,12 +34,23 @@ class AgentWorkflow:
         self.file_manager = FileManagerAgent()
         self.sandbox = SandboxAgent()
 
-        # Initialize browser agent (either standard or enhanced)
-        if use_enhanced_browser:
+        # Initialize browser agent (either standard, enhanced, or Streamlit-compatible)
+        # Check if we're running in Streamlit Cloud
+        import os
+        is_streamlit_cloud = os.environ.get('STREAMLIT_SHARING_MODE') == 'streamlit' or 'STREAMLIT_RUNTIME' in os.environ
+
+        if is_streamlit_cloud:
+            # Use Streamlit-compatible browser agent in Streamlit Cloud
+            self.browser = StreamlitBrowserAgent()
+            if self.debug:
+                print("Using Streamlit-compatible browser agent for Streamlit Cloud")
+        elif use_enhanced_browser:
+            # Use enhanced browser agent
             self.browser = OpenaBrowserAgent()
             if self.debug:
                 print("Using enhanced SuperNova browser agent")
         else:
+            # Use standard browser agent
             self.browser = BrowserAgent()
             if self.debug:
                 print("Using standard browser agent")
