@@ -6,6 +6,7 @@ from typing import Dict, Any, List, Optional
 import os
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from langchain_community.llms import Ollama
+from langchain_openai import ChatOpenAI
 
 from ..config.env import LLMConfig
 from ..prompts.template import format_prompt
@@ -25,49 +26,85 @@ class BaseAgent:
         self.use_reasoning_llm = use_reasoning_llm
         self.messages = []
 
-        # Initialize the LLM
-        # Clean up model names for Ollama compatibility
-        if use_reasoning_llm:
-            # Use reasoning model (more capable)
-            model_name = LLMConfig.REASONING_MODEL.replace(".2", "").replace(".1", "")  # Remove version suffix
-            if ":" in model_name:  # Remove size suffix if present
-                model_name = model_name.split(":")[0]
+        # Check if we're running on Streamlit Cloud
+        is_streamlit_cloud = os.environ.get('STREAMLIT_SHARING_MODE') == 'streamlit' or 'STREAMLIT_RUNTIME' in os.environ
+
+        # Check if OpenAI API key is available
+        openai_api_key = os.environ.get('OPENAI_API_KEY')
+
+        # If we're on Streamlit Cloud and have an OpenAI API key, use OpenAI
+        if is_streamlit_cloud and openai_api_key:
+            print("Running on Streamlit Cloud, using OpenAI API")
+            try:
+                if use_reasoning_llm:
+                    # Use a more capable model for reasoning
+                    self.llm = ChatOpenAI(
+                        model="gpt-3.5-turbo",  # You can change this to gpt-4 if needed
+                        openai_api_key=openai_api_key,
+                        temperature=0.7,
+                    )
+                else:
+                    # Use a faster model for basic tasks
+                    self.llm = ChatOpenAI(
+                        model="gpt-3.5-turbo",
+                        openai_api_key=openai_api_key,
+                        temperature=0.7,
+                    )
+                # Set a flag to indicate we're using a chat model
+                self.using_chat_model = True
+            except Exception as e:
+                print(f"Error initializing OpenAI: {str(e)}")
+                self._create_error_llm("OpenAI initialization failed. Please check your API key.")
         else:
-            # Use basic model (faster)
-            model_name = LLMConfig.BASIC_MODEL.replace(".2", "").replace(".1", "")  # Remove version suffix
-            if ":" in model_name:  # Remove size suffix if present
-                model_name = model_name.split(":")[0]
+            # Use Ollama for local development
+            print("Using local Ollama")
+            # Clean up model names for Ollama compatibility
+            if use_reasoning_llm:
+                # Use reasoning model (more capable)
+                model_name = LLMConfig.REASONING_MODEL.replace(".2", "").replace(".1", "")  # Remove version suffix
+                if ":" in model_name:  # Remove size suffix if present
+                    model_name = model_name.split(":")[0]
+            else:
+                # Use basic model (faster)
+                model_name = LLMConfig.BASIC_MODEL.replace(".2", "").replace(".1", "")  # Remove version suffix
+                if ":" in model_name:  # Remove size suffix if present
+                    model_name = model_name.split(":")[0]
 
-        # Initialize Ollama LLM
-        try:
-            self.llm = Ollama(
-                model=model_name,
-                base_url="http://localhost:11434",
-                temperature=0.7,
-            )
-        except Exception as e:
-            # If Ollama initialization fails, print error and create a simple error-returning LLM
-            print(f"Error initializing Ollama: {str(e)}")
-            from langchain.llms.base import LLM
+            # Initialize Ollama LLM
+            try:
+                self.llm = Ollama(
+                    model=model_name,
+                    base_url="http://localhost:11434",
+                    temperature=0.7,
+                )
+                # Set a flag to indicate we're using a regular LLM
+                self.using_chat_model = False
+            except Exception as e:
+                # If Ollama initialization fails, print error and create a simple error-returning LLM
+                print(f"Error initializing Ollama: {str(e)}")
+                self._create_error_llm("I'm sorry, but I couldn't connect to Ollama. Please make sure Ollama is running.")
 
-            class ErrorLLM(LLM):
-                def _call(self, prompt: str, **kwargs) -> str:
-                    return "I'm sorry, but I couldn't connect to Ollama. Please make sure Ollama is running."
+    def _create_error_llm(self, error_message: str):
+        """Create a simple error-returning LLM."""
+        from langchain.llms.base import LLM
 
-                @property
-                def _identifying_params(self) -> Dict[str, Any]:
-                    return {}
+        class ErrorLLM(LLM):
+            message: str = error_message
 
-                @property
-                def _llm_type(self) -> str:
-                    return "error"
+            def _call(self, prompt: str, **kwargs) -> str:
+                return self.message
 
-            # Initialize the error LLM
-            self.llm = ErrorLLM()
+            @property
+            def _identifying_params(self) -> Dict[str, Any]:
+                return {"message": self.message}
 
-        # Load system prompt
-        self.system_prompt = format_prompt(agent_type)
-        self.messages.append(SystemMessage(content=self.system_prompt))
+            @property
+            def _llm_type(self) -> str:
+                return "error"
+
+        # Initialize the error LLM
+        self.llm = ErrorLLM(message=error_message)
+        self.using_chat_model = False
 
     def add_message(self, role: str, content: str) -> None:
         """
@@ -96,11 +133,15 @@ class BaseAgent:
         self.add_message("human", query)
 
         try:
-            # Convert messages to a prompt string for Ollama
-            prompt = self._messages_to_prompt(self.messages)
-
-            # Get response from Ollama
-            response_text = self.llm(prompt)
+            # Handle different LLM types
+            if hasattr(self, 'using_chat_model') and self.using_chat_model:
+                # For chat models like OpenAI
+                response = self.llm.invoke(self.messages)
+                response_text = response.content if hasattr(response, 'content') else str(response)
+            else:
+                # For regular LLMs like Ollama
+                prompt = self._messages_to_prompt(self.messages)
+                response_text = self.llm(prompt)
 
             # Add the response to the conversation history
             self.add_message("ai", response_text)
@@ -108,11 +149,11 @@ class BaseAgent:
             return response_text
         except Exception as e:
             # Handle errors gracefully
-            error_message = f"Error getting response from Ollama: {str(e)}"
+            error_message = f"Error getting response: {str(e)}"
             print(error_message)
 
             # Add a fallback response to the conversation history
-            fallback_response = "I'm sorry, but I encountered an error while processing your request. Please make sure Ollama is running properly."
+            fallback_response = "I'm sorry, but I encountered an error while processing your request. Please try again."
             self.add_message("ai", fallback_response)
 
             return fallback_response
