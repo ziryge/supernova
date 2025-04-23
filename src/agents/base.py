@@ -5,17 +5,10 @@ Base agent class for SuperNova AI.
 from typing import Dict, Any, List, Optional
 import os
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+from langchain_community.llms import Ollama
 
-# Import the fallback LLM configuration
 from ..config.env import LLMConfig
 from ..prompts.template import format_prompt
-
-# Import the LLM fallback module
-try:
-    from ..config.llm_fallback import create_llm, is_ollama_available
-    FALLBACK_AVAILABLE = True
-except ImportError:
-    FALLBACK_AVAILABLE = False
 
 class BaseAgent:
     """Base agent class for all agents."""
@@ -32,83 +25,45 @@ class BaseAgent:
         self.use_reasoning_llm = use_reasoning_llm
         self.messages = []
 
-        # Initialize the LLM with fallback support
-        if FALLBACK_AVAILABLE:
-            # Check if we're running on Streamlit Cloud
-            is_streamlit_cloud = os.environ.get('STREAMLIT_SHARING_MODE') == 'streamlit' or 'STREAMLIT_RUNTIME' in os.environ
-
-            # Use the fallback LLM configuration
-            if is_streamlit_cloud or not is_ollama_available():
-                # Use the fallback LLM
-                self.llm = create_llm()
-            else:
-                # Use Ollama
-                if use_reasoning_llm:
-                    from langchain_community.llms import Ollama
-                    self.llm = Ollama(
-                        model=LLMConfig.REASONING_MODEL.replace(".2", "").replace(".1", ""),  # Remove version suffix
-                        base_url="http://localhost:11434",
-                        temperature=0.7,
-                    )
-                else:
-                    from langchain_community.llms import Ollama
-                    self.llm = Ollama(
-                        model=LLMConfig.BASIC_MODEL.replace(".2", "").replace(".1", "").split(":")[0],  # Remove version suffix and size
-                        base_url="http://localhost:11434",
-                        temperature=0.7,
-                    )
+        # Initialize the LLM
+        # Clean up model names for Ollama compatibility
+        if use_reasoning_llm:
+            # Use reasoning model (more capable)
+            model_name = LLMConfig.REASONING_MODEL.replace(".2", "").replace(".1", "")  # Remove version suffix
+            if ":" in model_name:  # Remove size suffix if present
+                model_name = model_name.split(":")[0]
         else:
-            # Fallback not available, use standard configuration
-            try:
-                # Try to use Ollama
-                from langchain_community.llms import Ollama
-                if use_reasoning_llm:
-                    self.llm = Ollama(
-                        model=LLMConfig.REASONING_MODEL.replace(".2", "").replace(".1", ""),  # Remove version suffix
-                        base_url="http://localhost:11434",
-                        temperature=0.7,
-                    )
-                else:
-                    self.llm = Ollama(
-                        model=LLMConfig.BASIC_MODEL.replace(".2", "").replace(".1", "").split(":")[0],  # Remove version suffix and size
-                        base_url="http://localhost:11434",
-                        temperature=0.7,
-                    )
-            except (ImportError, Exception) as e:
-                # If Ollama fails, try OpenAI
-                try:
-                    from langchain_openai import ChatOpenAI
-                    if use_reasoning_llm:
-                        self.llm = ChatOpenAI(
-                            model=LLMConfig.REASONING_MODEL,
-                            base_url=LLMConfig.REASONING_BASE_URL,
-                            api_key=LLMConfig.REASONING_API_KEY,
-                            temperature=0.7,
-                        )
-                    else:
-                        self.llm = ChatOpenAI(
-                            model=LLMConfig.BASIC_MODEL,
-                            base_url=LLMConfig.BASIC_BASE_URL,
-                            api_key=LLMConfig.BASIC_API_KEY,
-                            temperature=0.7,
-                        )
-                except ImportError:
-                    # If all else fails, create a dummy LLM
-                    from langchain.llms.base import LLM
+            # Use basic model (faster)
+            model_name = LLMConfig.BASIC_MODEL.replace(".2", "").replace(".1", "")  # Remove version suffix
+            if ":" in model_name:  # Remove size suffix if present
+                model_name = model_name.split(":")[0]
 
-                    class DummyLLM(LLM):
-                        def _call(self, prompt: str, **kwargs) -> str:
-                            return "I'm sorry, but no language model is available. Please make sure Ollama is installed or set up an OpenAI API key."
+        # Initialize Ollama LLM
+        try:
+            self.llm = Ollama(
+                model=model_name,
+                base_url="http://localhost:11434",
+                temperature=0.7,
+            )
+        except Exception as e:
+            # If Ollama initialization fails, print error and create a simple error-returning LLM
+            print(f"Error initializing Ollama: {str(e)}")
+            from langchain.llms.base import LLM
 
-                        @property
-                        def _identifying_params(self) -> Dict[str, Any]:
-                            return {}
+            class ErrorLLM(LLM):
+                def _call(self, prompt: str, **kwargs) -> str:
+                    return "I'm sorry, but I couldn't connect to Ollama. Please make sure Ollama is running."
 
-                        @property
-                        def _llm_type(self) -> str:
-                            return "dummy"
+                @property
+                def _identifying_params(self) -> Dict[str, Any]:
+                    return {}
 
-                    self.llm = DummyLLM()
+                @property
+                def _llm_type(self) -> str:
+                    return "error"
+
+            # Initialize the error LLM
+            self.llm = ErrorLLM()
 
         # Load system prompt
         self.system_prompt = format_prompt(agent_type)
@@ -141,16 +96,11 @@ class BaseAgent:
         self.add_message("human", query)
 
         try:
-            # Check if the LLM is a ChatModel or a regular LLM
-            if hasattr(self.llm, 'invoke') and callable(getattr(self.llm, 'invoke')):
-                # ChatModel interface (like ChatOpenAI)
-                response = self.llm.invoke(self.messages)
-                response_text = response.content if hasattr(response, 'content') else str(response)
-            else:
-                # Regular LLM interface (like Ollama)
-                # Convert messages to a prompt string
-                prompt = self._messages_to_prompt(self.messages)
-                response_text = self.llm(prompt)
+            # Convert messages to a prompt string for Ollama
+            prompt = self._messages_to_prompt(self.messages)
+
+            # Get response from Ollama
+            response_text = self.llm(prompt)
 
             # Add the response to the conversation history
             self.add_message("ai", response_text)
@@ -158,11 +108,11 @@ class BaseAgent:
             return response_text
         except Exception as e:
             # Handle errors gracefully
-            error_message = f"Error getting response: {str(e)}"
+            error_message = f"Error getting response from Ollama: {str(e)}"
             print(error_message)
 
             # Add a fallback response to the conversation history
-            fallback_response = "I'm sorry, but I encountered an error while processing your request. Please try again or check if the language model is available."
+            fallback_response = "I'm sorry, but I encountered an error while processing your request. Please make sure Ollama is running properly."
             self.add_message("ai", fallback_response)
 
             return fallback_response
