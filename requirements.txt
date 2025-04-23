@@ -11,3 +11,4 @@ tavily-python>=0.2.2
 duckduckgo-search>=4.1.0
 playwright>=1.40.0
 gunicorn>=21.2.0
+html2text>=2020.1.16

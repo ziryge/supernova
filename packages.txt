@@ -1,0 +1,7 @@
+chromium
+libicu-dev
+libjpeg-dev
+libpng-dev
+libtiff-dev
+libwebp-dev
+zlib1g-dev

@@ -31,4 +31,19 @@ serverAddress = "localhost"
 [theme]
 # The preset Streamlit theme that your custom theme inherits from.
 # One of "light" or "dark".
-base = "light"
+base = "dark"
+
+# Primary accent color for interactive elements.
+primaryColor = "#10a37f"
+
+# Background color for the main content area.
+backgroundColor = "#0f0f0f"
+
+# Background color for sidebar and most interactive widgets.
+secondaryBackgroundColor = "#202123"
+
+# Color used for almost all text.
+textColor = "#ececf1"
+
+# Font family for all text in the app, except code blocks.
+font = "sans-serif"
