@@ -49,18 +49,28 @@ class BaseAgent:
                     if use_reasoning_llm:
                         # Use DeepSeek Coder model for reasoning
                         self.llm = HuggingFaceEndpoint(
-                            repo_id="deepseek-ai/deepseek-coder-33b-instruct",
+                            endpoint_url="https://api-inference.huggingface.co/models/deepseek-ai/deepseek-coder-33b-instruct",
                             huggingfacehub_api_token=hf_api_key,
-                            temperature=0.7,
-                            max_length=4096,
+                            task="text-generation",
+                            model_kwargs={
+                                "temperature": 0.7,
+                                "max_new_tokens": 4096,
+                                "do_sample": True,
+                                "return_full_text": False
+                            }
                         )
                     else:
                         # Use DeepSeek model for basic tasks
                         self.llm = HuggingFaceEndpoint(
-                            repo_id="deepseek-ai/deepseek-llm-7b-chat",
+                            endpoint_url="https://api-inference.huggingface.co/models/deepseek-ai/deepseek-llm-7b-chat",
                             huggingfacehub_api_token=hf_api_key,
-                            temperature=0.7,
-                            max_length=2048,
+                            task="text-generation",
+                            model_kwargs={
+                                "temperature": 0.7,
+                                "max_new_tokens": 2048,
+                                "do_sample": True,
+                                "return_full_text": False
+                            }
                         )
                     # Set a flag to indicate we're using a regular LLM
                     self.using_chat_model = False
