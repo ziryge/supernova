@@ -100,14 +100,12 @@ class BaseAgent:
             # Clean up model names for Ollama compatibility
             if use_reasoning_llm:
                 # Use reasoning model (more capable)
-                model_name = LLMConfig.REASONING_MODEL.replace(".2", "").replace(".1", "")  # Remove version suffix
-                if ":" in model_name:  # Remove size suffix if present
-                    model_name = model_name.split(":")[0]
+                # Use the exact model name as it appears in Ollama
+                model_name = "llama3.2:latest"
             else:
                 # Use basic model (faster)
-                model_name = LLMConfig.BASIC_MODEL.replace(".2", "").replace(".1", "")  # Remove version suffix
-                if ":" in model_name:  # Remove size suffix if present
-                    model_name = model_name.split(":")[0]
+                # Use the exact model name as it appears in Ollama
+                model_name = "llama3.1:8b"
 
             # Initialize Ollama LLM
             try:

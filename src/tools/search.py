@@ -3,16 +3,10 @@ Web search tools for SuperNova AI.
 """
 
 from typing import List, Dict, Any, Optional
-from ..config.env import ToolConfig, DEBUG
+from ..config.env import DEBUG
 from ..config.tools import SEARCH_CONFIG
 
-# Try to import optional dependencies
-try:
-    from tavily import TavilyClient
-    TAVILY_AVAILABLE = True
-except ImportError:
-    TAVILY_AVAILABLE = False
-
+# Import DuckDuckGo search
 try:
     from duckduckgo_search import DDGS
     DDGS_AVAILABLE = True
@@ -24,7 +18,6 @@ class WebSearch:
 
     def __init__(self):
         """Initialize the web search tool."""
-        self.tavily_api_key = ToolConfig.TAVILY_API_KEY
         self.max_results = SEARCH_CONFIG["max_results"]
         self.search_depth = SEARCH_CONFIG["search_depth"]
 
@@ -46,21 +39,14 @@ class WebSearch:
         if DEBUG:
             print(f"Searching for: {query}")
             print(f"Max results: {max_results}")
-            print(f"Tavily API key available: {bool(self.tavily_api_key)}")
-            print(f"Tavily package available: {TAVILY_AVAILABLE}")
             print(f"DuckDuckGo package available: {DDGS_AVAILABLE}")
 
-        # Try different search methods in order of preference
+        # Always use DuckDuckGo if available
         if DDGS_AVAILABLE:
             # If DuckDuckGo package is available, use DuckDuckGo
             if DEBUG:
                 print("Using DuckDuckGo search")
             return self._duckduckgo_search(query, max_results)
-        elif self.tavily_api_key and TAVILY_AVAILABLE:
-            # If Tavily API key is available and package is installed, use Tavily
-            if DEBUG:
-                print("Using Tavily search")
-            return self._tavily_search(query, max_results)
         else:
             # Otherwise, use a simulated search
             if DEBUG:
@@ -69,55 +55,17 @@ class WebSearch:
 
     def _tavily_search(self, query: str, max_results: int) -> List[Dict[str, Any]]:
         """
-        Search using Tavily API.
+        Search using Tavily API (deprecated, always falls back to DuckDuckGo).
 
         Args:
             query: The search query
             max_results: Maximum number of results to return
 
         Returns:
-            A list of search results
+            A list of search results from DuckDuckGo
         """
-        if not TAVILY_AVAILABLE:
-            print("Tavily package not installed. Using alternative search method.")
-            return self._duckduckgo_search(query, max_results)
-
-        try:
-            # Use the Tavily client library
-            client = TavilyClient(api_key=self.tavily_api_key)
-
-            search_params = {
-                "query": query,
-                "max_results": max_results,
-                "search_depth": self.search_depth,
-                "include_domains": SEARCH_CONFIG["include_domains"] or None,
-                "exclude_domains": SEARCH_CONFIG["exclude_domains"] or None,
-            }
-
-            # Remove None values
-            search_params = {k: v for k, v in search_params.items() if v is not None}
-
-            # Execute the search
-            response = client.search(**search_params)
-
-            if "results" in response:
-                results = response["results"]
-                return [
-                    {
-                        "title": result.get("title", ""),
-                        "url": result.get("url", ""),
-                        "content": result.get("content", ""),
-                        "score": result.get("score", 0),
-                    }
-                    for result in results
-                ]
-            else:
-                print(f"Tavily API error: {response}")
-                return self._duckduckgo_search(query, max_results)
-
-        except Exception as e:
-            print(f"Error using Tavily API: {e}")
-            return self._duckduckgo_search(query, max_results)
+        print("Tavily search is deprecated. Using DuckDuckGo instead.")
+        return self._duckduckgo_search(query, max_results)
 
     def _duckduckgo_search(self, query: str, max_results: int) -> List[Dict[str, Any]]:
         """

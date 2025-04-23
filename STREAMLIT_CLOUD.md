@@ -27,9 +27,6 @@ After creating your app, you need to add your API keys as secrets:
 4. Add one or more of the following secrets (in order of preference):
 
 ```
-# Required for web search
-TAVILY_API_KEY = "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"
-
 # Choose one of these LLM providers (in order of preference):
 
 # Option 1: Hugging Face with DeepSeek models (recommended)
@@ -41,6 +38,8 @@ GROQ_API_KEY = "your_groq_api_key"
 # Option 3: OpenAI
 OPENAI_API_KEY = "your_openai_api_key"
 ```
+
+Note: No API key is needed for web search as SuperNova AI uses DuckDuckGo, which doesn't require an API key.
 
 You can get API keys from:
 - [Hugging Face](https://huggingface.co/settings/tokens) (free account required)

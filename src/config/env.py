@@ -43,7 +43,6 @@ class ToolConfig:
     """Configuration for external tools."""
 
     # Search tools
-    TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
     JINA_API_KEY = os.getenv("JINA_API_KEY", "")
 
     # Browser configuration
@@ -62,8 +61,8 @@ def validate_config():
         print("Warning: VL_MODEL is not set. Using default model.")
 
     # Check for search capabilities
-    if not DDGS_AVAILABLE and not ToolConfig.TAVILY_API_KEY and DEBUG:
-        print("Warning: No search providers available. Web search functionality will be limited.")
+    if not DDGS_AVAILABLE and DEBUG:
+        print("Warning: DuckDuckGo search is not available. Web search functionality will be limited.")
 
 # Run validation
 validate_config()
