@@ -1,6 +1,6 @@
 # SuperNova AI
 
-SuperNova AI is a powerful agent-based AI system with enhanced web browsing capabilities and deep thinking modes. It features a modern, ChatGPT-like dark theme interface with interactive visualizations of the AI's thinking process.
+SuperNova AI is a powerful agent-based AI system with enhanced web browsing capabilities and deep thinking modes. It features a modern, ChatGPT-like dark theme interface with interactive visualizations of the AI's thinking process, image generation, data visualization, and voice interface capabilities.
 
 ## Features
 
@@ -8,12 +8,17 @@ SuperNova AI is a powerful agent-based AI system with enhanced web browsing capa
 - **Deep Thinking Modes**: Normal, Deep, and Super Deep thinking modes for different levels of analysis
 - **Modern UI**: ChatGPT-like dark theme interface with interactive visualizations
 - **Real-time Thinking Process**: Watch the AI's thinking process unfold in real-time
-- **Enhanced Web Browsing**: Powerful web browsing capabilities for research
+- **Enhanced Web Browsing**: Powerful web browsing capabilities for research using DuckDuckGo
 - **No Timeout**: Process requests for as long as needed without timing out
 - **Web UI**: User-friendly interface with Streamlit
 - **Local Inference**: Uses Ollama to run models locally
 - **Vision Capabilities**: Support for image analysis
 - **Multiple Models**: Configure different models for different types of tasks
+- **Image Generation**: Create images from text descriptions (using Stability AI or DALL-E)
+- **Data Visualization**: Create interactive charts and graphs from data
+- **Voice Interface**: Speech-to-text and text-to-speech capabilities
+- **Code Editor**: Built-in code editor with syntax highlighting and execution
+- **File Management**: Create, edit, and manage files in the sandbox environment
 
 ## Prerequisites
 
@@ -38,13 +43,34 @@ SuperNova AI is a powerful agent-based AI system with enhanced web browsing capa
 
 ## Running the Examples
 
-### Web UI (Recommended)
-To run the web interface with all features:
+### Modern UI (Recommended)
+To run the modern ChatGPT-like interface with all features:
+```
+./run_modern_ui.sh
+```
+or
+```
+streamlit run modern_ui.py
+```
+
+This will open a browser window with a modern, ChatGPT-like interface that supports:
+- Full agent-based workflow
+- Chat with different models
+- Real-time thinking process visualization
+- Image generation capabilities
+- Data visualization tools
+- Voice interface
+- Code editor with execution
+- File management
+- Dark theme with improved contrast
+
+### Classic Web UI
+To run the classic web interface:
 ```
 streamlit run app.py
 ```
 
-This will open a browser window with a user-friendly interface that supports:
+This will open a browser window with the original interface that supports:
 - Full agent-based workflow (enable in sidebar)
 - Chat with different models
 - Vision capabilities with image upload
@@ -94,16 +120,19 @@ Edit the `.env` file to change models or other settings. The current configurati
 ## Project Structure
 
 ### Main Files
-- `app.py` - Streamlit web UI for chat and vision capabilities
+- `modern_ui.py` - Modern ChatGPT-like Streamlit UI with all features
+- `app.py` - Classic Streamlit web UI for chat and vision capabilities
 - `main.py` - Command-line entry point and connection test
 - `.env` - Configuration file
+- `run_modern_ui.sh` - Script to run the modern UI
 
 ### Source Code
 - `src/agents/` - Agent implementations (Supervisor, Researcher, Coder, etc.)
 - `src/config/` - Configuration modules
 - `src/prompts/` - Prompt templates for agents
-- `src/tools/` - Tool implementations (search, Python REPL, file operations)
+- `src/tools/` - Tool implementations (search, Python REPL, file operations, image generation, data visualization, voice interface)
 - `src/workflow/` - Agent workflow coordination
+- `src/ui/` - UI components and utilities
 
 ### Utility Scripts
 - `simple_chat.py` - Simple chat interface with memory
@@ -137,10 +166,15 @@ For more advanced usage, explore the SuperNova AI documentation and examples inc
 SuperNova AI is designed to work with Ollama for local inference, with these key features:
 
 1. Uses Ollama for local model inference without API costs
-2. Enhanced browser agent with real web browsing capabilities
-3. Intuitive Streamlit UI for easier interaction
+2. Enhanced browser agent with real web browsing capabilities using DuckDuckGo
+3. Modern ChatGPT-like UI with dark theme and improved contrast
 4. Configured to work with llama3 models by default
-5. Transparent thinking process visualization
+5. Transparent thinking process visualization in real-time
+6. Image generation capabilities (with Stability AI or DALL-E when API keys are provided)
+7. Data visualization tools for creating charts and graphs
+8. Voice interface for speech-to-text and text-to-speech
+9. Built-in code editor with syntax highlighting and execution
+10. File management system for creating and editing files
 
 ## Hosting Options
 
