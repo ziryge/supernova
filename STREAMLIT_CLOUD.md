@@ -24,14 +24,28 @@ After creating your app, you need to add your API keys as secrets:
 1. Click on the three dots next to your app in the dashboard
 2. Select "Settings"
 3. Go to the "Secrets" section
-4. Add the following secrets:
+4. Add one or more of the following secrets (in order of preference):
 
 ```
+# Required for web search
 TAVILY_API_KEY = "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"
+
+# Choose one of these LLM providers (in order of preference):
+
+# Option 1: Hugging Face with DeepSeek models (recommended)
+HUGGINGFACE_API_KEY = "your_huggingface_api_key"
+
+# Option 2: Groq with Llama 3 models
+GROQ_API_KEY = "your_groq_api_key"
+
+# Option 3: OpenAI
 OPENAI_API_KEY = "your_openai_api_key"
 ```
 
-You need to get an OpenAI API key from [OpenAI's website](https://platform.openai.com/api-keys).
+You can get API keys from:
+- [Hugging Face](https://huggingface.co/settings/tokens) (free account required)
+- [Groq](https://console.groq.com/keys) (free account required)
+- [OpenAI](https://platform.openai.com/api-keys) (credit card required)
 
 ## Step 4: Restart Your App
 
@@ -45,11 +59,29 @@ After adding the secrets, restart your app:
 SuperNova AI is configured to automatically detect when it's running on Streamlit Cloud:
 
 1. When running locally, it uses Ollama for language model inference
-2. When running on Streamlit Cloud, it uses OpenAI's API
+2. When running on Streamlit Cloud, it tries these providers in order:
+   - Hugging Face with DeepSeek models (if HUGGINGFACE_API_KEY is provided)
+   - Groq with Llama 3 models (if GROQ_API_KEY is provided)
+   - OpenAI (if OPENAI_API_KEY is provided)
 
 This hybrid approach gives you the best of both worlds:
 - Local development with Ollama (free, private)
-- Cloud deployment with OpenAI (reliable, accessible from anywhere)
+- Cloud deployment with your choice of LLM provider
+
+## Model Selection
+
+Depending on which API key you provide, SuperNova AI will use different models:
+
+### Hugging Face (DeepSeek)
+- For reasoning: `deepseek-ai/deepseek-coder-33b-instruct` (powerful coding model)
+- For basic tasks: `deepseek-ai/deepseek-llm-7b-chat` (faster general model)
+
+### Groq
+- For reasoning: `llama3-70b-8192` (powerful general model)
+- For basic tasks: `llama3-8b-8192` (faster model)
+
+### OpenAI
+- For all tasks: `gpt-3.5-turbo` (balanced model)
 
 ## Troubleshooting
 
@@ -61,4 +93,6 @@ If you encounter any issues:
 
 ## Cost Considerations
 
-Using OpenAI's API incurs costs based on usage. The app is configured to use gpt-3.5-turbo, which is relatively inexpensive. Monitor your usage on the OpenAI dashboard to avoid unexpected charges.
+- **Hugging Face**: Free for most models, including DeepSeek models
+- **Groq**: Free tier available with generous limits
+- **OpenAI**: Pay-as-you-go pricing, no free tier
