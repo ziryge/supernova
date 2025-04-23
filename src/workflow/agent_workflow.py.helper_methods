@@ -1,0 +1,64 @@
+    def _extract_code(self, task: str) -> str:
+        """
+        Extract Python code from a task.
+        
+        Args:
+            task: Task to extract code from
+            
+        Returns:
+            Extracted code
+        """
+        # Use the supervisor to extract the code
+        prompt = f"I need to extract Python code from the following task:\n\n{task}\n\nPlease extract only the Python code without any additional text. If there are multiple code blocks, combine them into a single coherent script. If there is no code, return an empty string."
+        
+        code = self.supervisor.get_response(prompt)
+        
+        # Clean up the code
+        code = self._clean_code_block(code)
+        
+        return code
+    
+    def _extract_command(self, task: str) -> str:
+        """
+        Extract a shell command from a task.
+        
+        Args:
+            task: Task to extract command from
+            
+        Returns:
+            Extracted command
+        """
+        # Use the supervisor to extract the command
+        prompt = f"I need to extract a shell command from the following task:\n\n{task}\n\nPlease extract only the shell command without any additional text. If there are multiple commands, combine them into a single command line (using && if needed). If there is no command, return an empty string."
+        
+        command = self.supervisor.get_response(prompt)
+        
+        # Clean up the command
+        command = self._clean_code_block(command)
+        
+        return command
+    
+    def _clean_code_block(self, text: str) -> str:
+        """
+        Clean up a code block by removing markdown formatting.
+        
+        Args:
+            text: Text to clean
+            
+        Returns:
+            Cleaned text
+        """
+        # Remove markdown code block markers
+        lines = text.split("\n")
+        cleaned_lines = []
+        in_code_block = False
+        
+        for line in lines:
+            if line.strip().startswith("```"):
+                in_code_block = not in_code_block
+                continue
+            
+            if not in_code_block or line.strip():
+                cleaned_lines.append(line)
+        
+        return "\n".join(cleaned_lines).strip()

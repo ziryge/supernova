@@ -1,0 +1,16 @@
+[Unit]
+Description=SuperNova AI Server
+After=network.target
+
+[Service]
+User=YOUR_USERNAME
+WorkingDirectory=/path/to/supernova-ai
+ExecStart=/usr/bin/python3 server.py --no-browser
+Restart=on-failure
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+Environment="PYTHONUNBUFFERED=1"
+
+[Install]
+WantedBy=multi-user.target

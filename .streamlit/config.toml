@@ -1,0 +1,34 @@
+[server]
+# If false, will attempt to open a browser window on start.
+headless = true
+
+# Enables cors for all origins
+enableCORS = false
+
+# Enable connection from all network interfaces
+enableXsrfProtection = false
+
+# If true, will enable the server to be accessed externally
+# from the network at port 8501.
+server.address = "0.0.0.0"
+
+# Port where the server will listen for browser connections.
+port = 8501
+
+# Max size, in megabytes, for files uploaded with the file_uploader.
+maxUploadSize = 20
+
+[browser]
+# Internet address where users should point their browsers in order to
+# connect to the app. Can be IP address or DNS name and path.
+# This is used to:
+# - Set the correct URL for CORS and XSRF protection purposes.
+# - Show the URL on the terminal
+# - Open the browser
+# Default: "localhost"
+serverAddress = "localhost"
+
+[theme]
+# The preset Streamlit theme that your custom theme inherits from.
+# One of "light" or "dark".
+base = "light"

@@ -1,0 +1,378 @@
+/* SuperNova AI Enhanced Theme */
+:root {
+  --primary: #10a37f;
+  --primary-light: #19c37d;
+  --primary-dark: #0d8c6e;
+  --secondary: #7c3aed;
+  --secondary-light: #8b5cf6;
+  --secondary-dark: #6d28d9;
+  --background: #0f0f0f;
+  --background-secondary: #202123;
+  --background-tertiary: #343541;
+  --background-quaternary: #444654;
+  --text-primary: #ececf1;
+  --text-secondary: #8e8ea0;
+  --text-tertiary: #6b7280;
+  --border: #2d2d3a;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #3b82f6;
+}
+
+/* Global styles */
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Sidebar styling */
+[data-testid="stSidebar"] {
+  background-color: var(--background-secondary) !important;
+  border-right: 1px solid var(--border);
+}
+
+/* Header styling */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary) !important;
+  font-weight: 600 !important;
+}
+
+/* Button styling */
+.stButton > button {
+  background-color: var(--primary) !important;
+  color: white !important;
+  border-radius: 4px !important;
+  border: none !important;
+  padding: 0.5rem 1rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.stButton > button:hover {
+  background-color: var(--primary-light) !important;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+  transform: translateY(-1px);
+}
+
+.stButton > button:active {
+  background-color: var(--primary-dark) !important;
+  transform: translateY(0);
+}
+
+/* Secondary button */
+.secondary-button > button {
+  background-color: transparent !important;
+  color: var(--primary) !important;
+  border: 1px solid var(--primary) !important;
+}
+
+.secondary-button > button:hover {
+  background-color: rgba(16, 163, 127, 0.1) !important;
+}
+
+/* Danger button */
+.danger-button > button {
+  background-color: var(--error) !important;
+}
+
+.danger-button > button:hover {
+  background-color: #f87171 !important;
+}
+
+/* Input styling */
+.stTextInput > div > div > input,
+.stNumberInput > div > div > input,
+.stTextArea > div > div > textarea {
+  background-color: var(--background-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 4px !important;
+  padding: 0.75rem !important;
+  transition: all 0.2s ease;
+}
+
+.stTextInput > div > div > input:focus,
+.stNumberInput > div > div > input:focus,
+.stTextArea > div > div > textarea:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(16, 163, 127, 0.2) !important;
+}
+
+/* Select box styling */
+.stSelectbox > div > div > div {
+  background-color: var(--background-tertiary) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 4px !important;
+}
+
+/* Radio button styling */
+.stRadio > div {
+  background-color: var(--background-secondary) !important;
+  padding: 10px !important;
+  border-radius: 5px !important;
+}
+
+.stRadio label {
+  color: var(--text-primary) !important;
+}
+
+.stRadio label span {
+  color: var(--text-secondary) !important;
+}
+
+/* Checkbox styling */
+.stCheckbox > div > div > label {
+  color: var(--text-primary) !important;
+}
+
+.stCheckbox > div > div > label > div {
+  background-color: var(--background-tertiary) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Tabs styling */
+.stTabs [data-baseweb="tab-list"] {
+  background-color: var(--background-secondary) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.25rem !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+  color: var(--text-secondary) !important;
+  border-radius: 0.25rem !important;
+  padding: 0.5rem 1rem !important;
+  margin: 0 0.25rem !important;
+}
+
+.stTabs [aria-selected="true"] {
+  background-color: var(--background-tertiary) !important;
+  color: var(--text-primary) !important;
+  font-weight: 500 !important;
+}
+
+/* Chat container styling */
+[data-testid="stChatContainer"] {
+  background-color: var(--background-tertiary) !important;
+  border-radius: 0.5rem !important;
+  padding: 1rem !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Chat input container */
+[data-testid="stChatInputContainer"] {
+  background-color: var(--background-tertiary) !important;
+  border-radius: 0.5rem !important;
+  padding: 0.5rem !important;
+  border-top: 1px solid var(--border) !important;
+}
+
+/* Chat message styling */
+.stChatMessage {
+  background-color: var(--background-tertiary) !important;
+  border-radius: 0.5rem !important;
+  padding: 1rem !important;
+  margin-bottom: 1rem !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Chat message content */
+.stChatMessage p, 
+.stChatMessage span, 
+.stChatMessage div {
+  color: var(--text-primary) !important;
+}
+
+/* Style for user messages */
+[data-testid="stChatMessageContent"] {
+  background-color: var(--background-tertiary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Style for AI messages */
+.stChatMessage [data-testid="stChatMessageContent"] {
+  background-color: var(--background-quaternary) !important;
+  color: var(--text-primary) !important;
+  border-radius: 0.5rem !important;
+  padding: 1rem !important;
+}
+
+/* Alternating message backgrounds */
+.stChatMessage:nth-child(odd) {
+  background-color: var(--background-tertiary) !important;
+}
+
+.stChatMessage:nth-child(even) {
+  background-color: var(--background-quaternary) !important;
+}
+
+/* Code blocks in chat */
+.stChatMessage pre, 
+.stChatMessage code {
+  background-color: var(--background-secondary) !important;
+  color: var(--text-primary) !important;
+  border-radius: 0.375rem !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* Links in chat */
+.stChatMessage a {
+  color: var(--primary) !important;
+  text-decoration: none !important;
+}
+
+.stChatMessage a:hover {
+  text-decoration: underline !important;
+}
+
+/* Card styling */
+.card {
+  background-color: var(--background-tertiary);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.card-content {
+  color: var(--text-secondary);
+}
+
+/* Badge styling */
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.badge-primary {
+  background-color: var(--primary);
+  color: white;
+}
+
+.badge-secondary {
+  background-color: var(--secondary);
+  color: white;
+}
+
+.badge-success {
+  background-color: var(--success);
+  color: white;
+}
+
+.badge-warning {
+  background-color: var(--warning);
+  color: white;
+}
+
+.badge-error {
+  background-color: var(--error);
+  color: white;
+}
+
+.badge-info {
+  background-color: var(--info);
+  color: white;
+}
+
+/* Tooltip styling */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltip-text {
+  visibility: hidden;
+  width: 120px;
+  background-color: var(--background-quaternary);
+  color: var(--text-primary);
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--background-quaternary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Animation for transitions */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(52, 53, 65, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .card {
+    padding: 12px;
+  }
+  
+  .stButton > button {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 14px !important;
+  }
+}

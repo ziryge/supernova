@@ -1,0 +1,167 @@
+    def _process_sandbox_task(self, task: str) -> str:
+        """
+        Process a task with the sandbox agent.
+        
+        Args:
+            task: Task to process
+            
+        Returns:
+            Result of the task
+        """
+        # Record the task
+        self.current_task = {
+            "task": task,
+            "specialist": "sandbox",
+            "start_time": time.time(),
+        }
+        
+        # Add thinking step
+        self.thinking.add_thinking("I'll use the Sandbox agent to execute code or commands in a safe environment.")
+        
+        # Determine if this is a code execution or command execution task
+        if "python" in task.lower() or "code" in task.lower() or "script" in task.lower():
+            # Add thinking step
+            self.thinking.add_thinking("This appears to be a code execution task. I'll extract the Python code to execute.")
+            
+            # Create a plan
+            plan = [
+                "Extract the Python code from the task",
+                "Prepare the code for execution",
+                "Execute the code in a sandbox environment",
+                "Analyze the execution results",
+                "Provide a comprehensive summary"
+            ]
+            self.thinking.add_planning(plan)
+            
+            # Extract the code
+            self.thinking.add_thinking("Extracting Python code...")
+            code = self._extract_code(task)
+            
+            # Add execution step
+            self.thinking.add_execution("extract_code", {
+                "code_length": len(code) if code else 0
+            })
+            
+            if code:
+                # Add thinking step
+                self.thinking.add_thinking(f"Executing the following Python code:\n\n```python\n{code}\n```")
+                
+                # Add file to thinking process
+                code_filename = "sandbox_code.py"
+                self.thinking.add_file(
+                    path=code_filename,
+                    content=code,
+                    description="Python code to execute in sandbox"
+                )
+                
+                # Execute the code
+                result = self.sandbox.execute_python(code)
+                
+                # Add execution step
+                self.thinking.add_execution("execute_python", {
+                    "status": result["status"],
+                    "stdout_length": len(result.get("stdout", "")),
+                    "stderr_length": len(result.get("stderr", ""))
+                })
+                
+                # Format the result
+                formatted_result = f"# Code Execution Result\n\n## Code\n\n```python\n{code}\n```\n\n## Output\n\n"
+                
+                if result["status"] == "success":
+                    # Add thinking step
+                    self.thinking.add_thinking("Code executed successfully!")
+                    
+                    if result.get("stdout"):
+                        self.thinking.add_thinking(f"Output:\n\n```\n{result['stdout']}\n```")
+                        formatted_result += f"```\n{result['stdout']}\n```\n\n"
+                    else:
+                        formatted_result += "No output produced.\n\n"
+                else:
+                    # Add thinking step
+                    self.thinking.add_thinking(f"Code execution failed with error:\n\n```\n{result.get('stderr', '')}\n```")
+                    
+                    formatted_result += f"Error:\n```\n{result.get('stderr', '')}\n```\n\n"
+                
+                # Add analysis
+                formatted_result += f"## Analysis\n\n{result.get('analysis', '')}"
+            else:
+                # Add thinking step
+                self.thinking.add_thinking("I couldn't extract any Python code from the request.")
+                
+                formatted_result = "I couldn't extract any Python code from your request. Please provide the code you want to execute."
+        
+        elif "command" in task.lower() or "shell" in task.lower() or "terminal" in task.lower() or "bash" in task.lower() or "run" in task.lower():
+            # Add thinking step
+            self.thinking.add_thinking("This appears to be a command execution task. I'll extract the shell command to execute.")
+            
+            # Create a plan
+            plan = [
+                "Extract the shell command from the task",
+                "Prepare the command for execution",
+                "Execute the command in a sandbox environment",
+                "Analyze the execution results",
+                "Provide a comprehensive summary"
+            ]
+            self.thinking.add_planning(plan)
+            
+            # Extract the command
+            self.thinking.add_thinking("Extracting shell command...")
+            command = self._extract_command(task)
+            
+            # Add execution step
+            self.thinking.add_execution("extract_command", {
+                "command": command
+            })
+            
+            if command:
+                # Add thinking step
+                self.thinking.add_thinking(f"Executing the following shell command:\n\n```bash\n{command}\n```")
+                
+                # Execute the command
+                result = self.sandbox.execute_command(command)
+                
+                # Add execution step
+                self.thinking.add_execution("execute_command", {
+                    "status": result["status"],
+                    "stdout_length": len(result.get("stdout", "")),
+                    "stderr_length": len(result.get("stderr", ""))
+                })
+                
+                # Format the result
+                formatted_result = f"# Command Execution Result\n\n## Command\n\n```bash\n{command}\n```\n\n## Output\n\n"
+                
+                if result["status"] == "success":
+                    # Add thinking step
+                    self.thinking.add_thinking("Command executed successfully!")
+                    
+                    if result.get("stdout"):
+                        self.thinking.add_thinking(f"Output:\n\n```\n{result['stdout']}\n```")
+                        formatted_result += f"```\n{result['stdout']}\n```\n\n"
+                    else:
+                        formatted_result += "No output produced.\n\n"
+                else:
+                    # Add thinking step
+                    self.thinking.add_thinking(f"Command execution failed with error:\n\n```\n{result.get('stderr', '')}\n```")
+                    
+                    formatted_result += f"Error:\n```\n{result.get('stderr', '')}\n```\n\n"
+                
+                # Add analysis
+                formatted_result += f"## Analysis\n\n{result.get('analysis', '')}"
+            else:
+                # Add thinking step
+                self.thinking.add_thinking("I couldn't extract any shell command from the request.")
+                
+                formatted_result = "I couldn't extract any shell command from your request. Please provide the command you want to execute."
+        
+        else:
+            # Add thinking step
+            self.thinking.add_thinking("I'm not sure what type of sandbox task is being requested. I'll ask the user for clarification.")
+            
+            formatted_result = "I'm not sure if you want me to execute Python code or a shell command. Please specify which type of execution you need and provide the code or command."
+        
+        # Add the result to the task
+        self.current_task["result"] = formatted_result
+        self.current_task["end_time"] = time.time()
+        self.tasks.append(self.current_task)
+        
+        return formatted_result

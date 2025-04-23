@@ -1,0 +1,98 @@
+    def extract_file_info(self, request: str) -> Dict[str, Any]:
+        """
+        Extract file information from a user request.
+        
+        Args:
+            request: User request containing file information
+            
+        Returns:
+            A dictionary containing the extracted file information
+        """
+        prompt = f"""
+        I need to extract file information from the following request:
+        
+        ```
+        {request}
+        ```
+        
+        Please extract the following information:
+        1. The filename or file path
+        2. The file content
+        
+        Return the information in the following format:
+        
+        Filename: <extracted filename>
+        Content: <extracted content>
+        
+        If you cannot extract the filename or content, indicate that with "Not found".
+        """
+        
+        response = self.get_response(prompt)
+        
+        # Parse the response
+        filename = None
+        content = None
+        
+        for line in response.split("\n"):
+            if line.lower().startswith("filename:"):
+                filename = line.split(":", 1)[1].strip()
+                if filename.lower() == "not found":
+                    filename = None
+            elif line.lower().startswith("content:"):
+                content_start = line.find(":", 1) + 1
+                content = line[content_start:].strip()
+                if content.lower() == "not found":
+                    content = None
+                    
+        # If content spans multiple lines, extract it
+        if content is None or content == "":
+            content_start = response.find("Content:") + 8
+            if content_start > 8:
+                content = response[content_start:].strip()
+                if content.lower() == "not found":
+                    content = None
+        
+        return {
+            "filename": filename,
+            "content": content
+        }
+    
+    def create_file_from_request(self, request: str) -> Dict[str, Any]:
+        """
+        Create a file based on a user request.
+        
+        Args:
+            request: User request containing file information
+            
+        Returns:
+            A dictionary containing the result
+        """
+        # Extract file information
+        file_info = self.extract_file_info(request)
+        
+        if not file_info["filename"]:
+            return {
+                "status": "error",
+                "error": "Could not extract filename from request",
+                "request": request
+            }
+        
+        if not file_info["content"]:
+            return {
+                "status": "error",
+                "error": "Could not extract content from request",
+                "request": request
+            }
+        
+        # Create the file
+        result = self.create_file(file_info["filename"], file_info["content"])
+        
+        # Add analysis
+        if result["status"] == "success":
+            analysis = f"Successfully created file '{file_info['filename']}' with {len(file_info['content'])} characters of content."
+        else:
+            analysis = f"Failed to create file '{file_info['filename']}': {result['error']}"
+        
+        result["analysis"] = analysis
+        
+        return result
